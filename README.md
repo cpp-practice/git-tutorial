@@ -41,6 +41,7 @@
 * репозиторий (`repository`) - любой проект, находящийся под управлением `git`. Фактически - просто папка с файлами (исходный код, конфигурации, make-файлы и т.д.). Например, каждая ваша домашняя работа будет выполняться в отдельном репозитории
 * коммит (`commit`) - единица изменения репозитория, т.е. набор изменений, которые вы внесли в файлы и сохранили в `git`
 * ветка (`branch`) - отдельно стоящая цепочка коммитов. Ветки удобно использовать для параллельной разработки нескольких фич, чтобы изолировать изменения друг от друга и иметь возможность добавлять коммиты в разные ветки параллельно. Обычно в репозитории есть т.н. `master`-ветка, в которую потом сливаются (мерджатся, `merge`) другие ветки. Ответвиться можно в любой момент от любого коммита. 
+* `HEAD` - коммит, на который в данный момент переключен репозиторий. В `git` вы можете переключаться как на ветки (тогда `HEAD` будет указывать на последний коммит в этой ветке), так и на отдельные коммиты.
 
   На картинке ниже видно пример из двух веток (голубой и ответвившейся от неё зеленой), и итоговое вливание зеленой ветки в голубую. ![Пример нескольких веток](https://wac-cdn.atlassian.com/dam/jcr:83323200-3c57-4c29-9b7e-e67e98745427/Branch-1.png?cdnVersion=jw)
 
@@ -71,8 +72,8 @@ P.S. `git` изначально является инструментом ком
 В первом случае вам нужна команда `git init`. Эта команда инициализирует необходимые `git` метаданные в той папке, в которой вы сейчас находитесь, после чего вы можете начинать свою работу. Этой команде также можно передать путь к папке, в которой вы хотите создать репозиторий.
 
 ```console
-user@unit-1223:~$ mkdir MyAwesomeProject
-user@unit-1223:~$ cd MyAwesomeProject/
+user@unit-1223:~$ mkdir MyAwesomeProject  # создаем папку 
+user@unit-1223:~$ cd MyAwesomeProject/    # переходим в неё
 user@unit-1223:~/MyAwesomeProject$ git init
 Initialized empty Git repository in /home/user/MyAwesomeProject/.git/
 user@unit-1223:~/MyAwesomeProject$
@@ -93,3 +94,74 @@ user@unit-1223:~/MyAwesomeProject$
 ```
 
 Как видно, `git` попросил меня ввести дополнительные данные о себе (мои логин и пароль на `GitHub`), потому что репозиторий, который я клонировал - приватный. Публичные репозитории можно клонировать и без учётной записи на `GitHub`.
+
+### Добавление изменений: команды status, add и commit
+
+Обычно, когда мы работаем с репозиторием, мы хотим что-то в нём менять, например добавлять/удалять/двигать файлы, а также изменять их содержимое. 
+
+`git` умеет замечать изменения, которые вы внесли в файлы относительно того состояния, в котором они были на момент `HEAD`-коммита. Увидеть, какие изменения были внесены, можно с помощью команды `git status`.
+
+```console
+user@unit-1223:~/MyAwesomeProject$ git status
+On branch master
+
+Initial commit
+
+nothing to commit (create/copy files and use "git add" to track)
+user@unit-1223:~/MyAwesomeProject$
+user@unit-1223:~/MyAwesomeProject$ echo "Hello world" > new_file.txt # записать "Hello world" в файл new_file.txt
+user@unit-1223:~/MyAwesomeProject$ git status
+On branch master
+
+Initial commit
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+        new_file.txt
+
+nothing added to commit but untracked files present (use "git add" to track)
+```
+
+`git` увидел, что появился новый (`untracked`) файл. 
+
+Для того, чтобы `git` запомнил его, на этом файле нужно выполнить команду `git add`.
+
+```console
+user@unit-1223:~/MyAwesomeProject$ git add new_file.txt
+user@unit-1223:~/MyAwesomeProject$ git status
+On branch master
+
+Initial commit
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+
+        new file:   new_file.txt
+```
+
+Если вы измените уже существующий файл, `git` тоже это заметит, и вам снова потребуется выполнить команду `git add`.
+
+```console
+user@unit-1223:~/MyAwesomeProject$ echo "Hello again" >> new_file.txt # дописать "Hello again" в new_file.txt
+user@unit-1223:~/MyAwesomeProject$ git status
+On branch master
+
+Initial commit
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+
+        new file:   new_file.txt
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+        modified:   new_file.txt
+
+user@unit-1223:~/MyAwesomeProject$
+```
+
+Команда `git add` может принимать много файлов сразу, а также целые папки.
+
